@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "convert-excel-to-json": "^1.7.0",
+    "html-tablify": "^2.0.4",
     "nodemon": "^2.0.22"
   }
 }
