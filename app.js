@@ -11,10 +11,18 @@ const result = excelToJson({
   ],
 });
 console.log(result);
-const jsonfile = require("jsonfile");
 
-const file = "/tmp/data.json";
-
-jsonfile.writeFile(file, result, function (err) {
-  if (err) console.error(err);
+const fs = require("fs");
+const customer = {
+  name: "Newbie Co.",
+  order_count: 0,
+  address: "Po Box City",
+};
+const jsonString = JSON.stringify(result);
+fs.writeFile("./kur.json", jsonString, (err) => {
+  if (err) {
+    console.log("Error writing file", err);
+  } else {
+    console.log("Successfully wrote file");
+  }
 });
