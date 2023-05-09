@@ -11,6 +11,7 @@
   "dependencies": {
     "convert-excel-to-json": "^1.7.0",
     "html-tablify": "^2.0.4",
+    "json-value-replacer": "^0.1.1",
     "jsonfile": "^6.1.0",
     "nodemon": "^2.0.22"
   }

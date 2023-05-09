@@ -1,12 +1,11 @@
 "use strict";
 const excelToJson = require("convert-excel-to-json");
-
 const result = excelToJson({
-  sourceFile: "1.xlsx",
+  sourceFile: "11.xlsx",
   sheets: [
     {
       name: "Refacc  Kurazai-Carabela-Islo",
-      range: "B11:H36710",
+      range: "B11:K36710",
     },
   ],
 });
