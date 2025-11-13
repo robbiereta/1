@@ -2,11 +2,769 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Fibromyalgia Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            background: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .slider-group {
+            margin-bottom: 25px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .slider-value {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: none;
+        }
+
+        .body-map {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .body-part {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .body-part:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .body-part.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.5);
+        }
+
+        .entry-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .entry-date {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .entry-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .entry-notes {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .pain-areas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .pain-area-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .body-map {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .entry-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="main"></div>
+    <div class="container">
+        <header>
+            <h1>Fibromyalgia Tracker</h1>
+            <p class="subtitle">Track your symptoms and identify patterns</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('new-entry')">New Entry</button>
+            <button class="tab" onclick="switchTab('history')">History</button>
+            <button class="tab" onclick="switchTab('charts')">Charts & Trends</button>
+        </div>
+
+        <!-- New Entry Tab -->
+        <div id="new-entry" class="tab-content active">
+            <h2 style="margin-bottom: 20px;">Log Daily Symptoms</h2>
+            <div id="success-message" class="success-message"></div>
+
+            <form id="entry-form">
+                <div class="form-group">
+                    <label for="entry-date">Date</label>
+                    <input type="date" id="entry-date" required>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Pain Level</span>
+                        <span class="slider-value" id="pain-value">5</span>
+                    </div>
+                    <input type="range" id="pain" min="0" max="10" value="5" oninput="updateSliderValue('pain')">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Fatigue Level</span>
+                        <span class="slider-value" id="fatigue-value">5</span>
+                    </div>
+                    <input type="range" id="fatigue" min="0" max="10" value="5" oninput="updateSliderValue('fatigue')">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Brain Fog</span>
+                        <span class="slider-value" id="brainFog-value">5</span>
+                    </div>
+                    <input type="range" id="brainFog" min="0" max="10" value="5" oninput="updateSliderValue('brainFog')">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Sleep Quality</span>
+                        <span class="slider-value" id="sleep-value">5</span>
+                    </div>
+                    <input type="range" id="sleep" min="0" max="10" value="5" oninput="updateSliderValue('sleep')">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Mood</span>
+                        <span class="slider-value" id="mood-value">5</span>
+                    </div>
+                    <input type="range" id="mood" min="0" max="10" value="5" oninput="updateSliderValue('mood')">
+                </div>
+
+                <div class="form-group">
+                    <label>Pain Areas (click to select)</label>
+                    <div class="body-map" id="body-map">
+                        <div class="body-part" data-part="head">Head</div>
+                        <div class="body-part" data-part="neck">Neck</div>
+                        <div class="body-part" data-part="shoulders">Shoulders</div>
+                        <div class="body-part" data-part="upper-back">Upper Back</div>
+                        <div class="body-part" data-part="lower-back">Lower Back</div>
+                        <div class="body-part" data-part="chest">Chest</div>
+                        <div class="body-part" data-part="arms">Arms</div>
+                        <div class="body-part" data-part="hands">Hands</div>
+                        <div class="body-part" data-part="hips">Hips</div>
+                        <div class="body-part" data-part="legs">Legs</div>
+                        <div class="body-part" data-part="knees">Knees</div>
+                        <div class="body-part" data-part="feet">Feet</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="medications">Medications Taken (comma-separated)</label>
+                    <input type="text" id="medications" placeholder="e.g., Ibuprofen 400mg, Vitamin D">
+                </div>
+
+                <div class="form-group">
+                    <label for="triggers">Possible Triggers (comma-separated)</label>
+                    <input type="text" id="triggers" placeholder="e.g., Cold weather, Stress, Lack of sleep">
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" placeholder="Any additional observations or comments..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">Save Entry</button>
+            </form>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Entry History</h2>
+                <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+            </div>
+            <div id="history-list"></div>
+        </div>
+
+        <!-- Charts Tab -->
+        <div id="charts" class="tab-content">
+            <h2 style="margin-bottom: 20px;">Trends & Statistics</h2>
+            <div id="stats-summary"></div>
+            <div class="chart-container">
+                <canvas id="symptom-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Set today's date as default
+        document.getElementById('entry-date').valueAsDate = new Date();
+
+        // Update slider values
+        function updateSliderValue(sliderId) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(`${sliderId}-value`);
+            valueDisplay.textContent = slider.value;
+        }
+
+        // Body part selection
+        document.getElementById('body-map').addEventListener('click', (e) => {
+            if (e.target.classList.contains('body-part')) {
+                e.target.classList.toggle('selected');
+            }
+        });
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            // Load data for specific tabs
+            if (tabName === 'history') {
+                loadHistory();
+            } else if (tabName === 'charts') {
+                loadCharts();
+            }
+        }
+
+        // Submit new entry
+        document.getElementById('entry-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const selectedParts = Array.from(document.querySelectorAll('.body-part.selected'))
+                .map(part => part.dataset.part);
+
+            const medications = document.getElementById('medications').value
+                .split(',')
+                .map(m => m.trim())
+                .filter(m => m);
+
+            const triggers = document.getElementById('triggers').value
+                .split(',')
+                .map(t => t.trim())
+                .filter(t => t);
+
+            const entry = {
+                date: document.getElementById('entry-date').value,
+                pain: parseInt(document.getElementById('pain').value),
+                fatigue: parseInt(document.getElementById('fatigue').value),
+                brainFog: parseInt(document.getElementById('brainFog').value),
+                sleep: parseInt(document.getElementById('sleep').value),
+                mood: parseInt(document.getElementById('mood').value),
+                painAreas: selectedParts,
+                medications: medications,
+                triggers: triggers,
+                notes: document.getElementById('notes').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/entries`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(entry)
+                });
+
+                if (response.ok) {
+                    showSuccessMessage('Entry saved successfully!');
+                    resetForm();
+                } else {
+                    alert('Failed to save entry. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to save entry. Please check your connection.');
+            }
+        });
+
+        function showSuccessMessage(message) {
+            const msgEl = document.getElementById('success-message');
+            msgEl.textContent = message;
+            msgEl.style.display = 'block';
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+            }, 3000);
+        }
+
+        function resetForm() {
+            document.getElementById('entry-form').reset();
+            document.getElementById('entry-date').valueAsDate = new Date();
+            document.querySelectorAll('.body-part').forEach(part => part.classList.remove('selected'));
+            ['pain', 'fatigue', 'brainFog', 'sleep', 'mood'].forEach(id => {
+                document.getElementById(id).value = 5;
+                updateSliderValue(id);
+            });
+        }
+
+        // Load history
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_URL}/api/entries`);
+                const entries = await response.json();
+
+                const historyList = document.getElementById('history-list');
+
+                if (entries.length === 0) {
+                    historyList.innerHTML = '<div class="no-data">No entries yet. Start tracking your symptoms!</div>';
+                    return;
+                }
+
+                // Sort by date (newest first)
+                entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                historyList.innerHTML = entries.map(entry => `
+                    <div class="entry-card">
+                        <div class="entry-date">${new Date(entry.date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })}</div>
+                        <div class="entry-stats">
+                            <div class="stat">
+                                <div class="stat-label">Pain</div>
+                                <div class="stat-value">${entry.pain}/10</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Fatigue</div>
+                                <div class="stat-value">${entry.fatigue}/10</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Brain Fog</div>
+                                <div class="stat-value">${entry.brainFog}/10</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Sleep</div>
+                                <div class="stat-value">${entry.sleep}/10</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Mood</div>
+                                <div class="stat-value">${entry.mood}/10</div>
+                            </div>
+                        </div>
+                        ${entry.painAreas && entry.painAreas.length > 0 ? `
+                            <div class="pain-areas">
+                                ${entry.painAreas.map(area => `<span class="pain-area-badge">${area}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('history-list').innerHTML = '<div class="no-data">Error loading entries</div>';
+            }
+        }
+
+        // Load charts
+        let symptomChart = null;
+
+        async function loadCharts() {
+            try {
+                const response = await fetch(`${API_URL}/api/stats`);
+                const stats = await response.json();
+
+                // Display summary statistics
+                const summaryEl = document.getElementById('stats-summary');
+                if (stats.totalEntries === 0) {
+                    summaryEl.innerHTML = '<div class="no-data">No data available yet</div>';
+                    return;
+                }
+
+                summaryEl.innerHTML = `
+                    <h3 style="margin-bottom: 15px;">Average Symptoms</h3>
+                    <div class="entry-stats" style="margin-bottom: 30px;">
+                        <div class="stat">
+                            <div class="stat-label">Pain</div>
+                            <div class="stat-value">${stats.averages.pain.toFixed(1)}/10</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Fatigue</div>
+                            <div class="stat-value">${stats.averages.fatigue.toFixed(1)}/10</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Brain Fog</div>
+                            <div class="stat-value">${stats.averages.brainFog.toFixed(1)}/10</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Sleep</div>
+                            <div class="stat-value">${stats.averages.sleep.toFixed(1)}/10</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Mood</div>
+                            <div class="stat-value">${stats.averages.mood.toFixed(1)}/10</div>
+                        </div>
+                    </div>
+                    <h3 style="margin-bottom: 15px;">Trend Chart (Last 30 Days)</h3>
+                `;
+
+                // Create chart
+                const ctx = document.getElementById('symptom-chart').getContext('2d');
+
+                // Destroy existing chart if it exists
+                if (symptomChart) {
+                    symptomChart.destroy();
+                }
+
+                const chartData = stats.recentTrends.map(entry => ({
+                    date: entry.date,
+                    pain: entry.pain,
+                    fatigue: entry.fatigue,
+                    brainFog: entry.brainFog,
+                    sleep: entry.sleep,
+                    mood: entry.mood
+                }));
+
+                symptomChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.map(d => new Date(d.date).toLocaleDateString()),
+                        datasets: [
+                            {
+                                label: 'Pain',
+                                data: chartData.map(d => d.pain),
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Fatigue',
+                                data: chartData.map(d => d.fatigue),
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Brain Fog',
+                                data: chartData.map(d => d.brainFog),
+                                borderColor: '#8b5cf6',
+                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Sleep Quality',
+                                data: chartData.map(d => d.sleep),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Mood',
+                                data: chartData.map(d => d.mood),
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 10
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('stats-summary').innerHTML = '<div class="no-data">Error loading statistics</div>';
+            }
+        }
+
+        // Export data
+        async function exportData() {
+            try {
+                const response = await fetch(`${API_URL}/api/export`);
+                const data = await response.json();
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fibro-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to export data');
+            }
+        }
+    </script>
 </body>
 </html>
